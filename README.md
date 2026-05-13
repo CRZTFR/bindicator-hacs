@@ -7,7 +7,7 @@ Local-push integration for the [Bindicator](https://bindicator.net) bin-collecti
 ### HACS (recommended)
 
 1. In HACS → Integrations → ⋮ → **Custom repositories**
-2. Add `https://github.com/<owner>/bindicator-hacs` as type **Integration**
+2. Add `https://github.com/CRZTFR/bindicator-hacs` as type **Integration**
 3. Install the **Bindicator** integration
 4. Restart Home Assistant
 5. Your Bindicator should appear under **Settings → Devices & Services → Discovered**. Click **Add** — there's nothing to configure.
@@ -23,7 +23,7 @@ If auto-discovery doesn't find your device (some routers block mDNS across VLANs
 ## Requirements
 
 - Home Assistant 2025.1.0 or newer
-- Bindicator firmware v23 or newer (older firmware uses MQTT Discovery; see below)
+- Bindicator firmware v23 or newer
 - HA and the Bindicator on the same LAN, with multicast reachability
 
 ## What you get
@@ -50,14 +50,6 @@ When you turn on a Bindicator light from HA, the device enters a "manual overrid
 - A *new* schedule transitions in (more active schedules than before).
 
 This matches the existing touchpad behaviour and is documented here so HA automation authors understand the precedence.
-
-## Migrating from the MQTT Discovery integration
-
-Earlier Bindicator firmwares published HA MQTT-Discovery messages to your Mosquitto broker. Firmware v23 removes that path — the device no longer needs a broker. After OTA:
-
-1. Install this integration via HACS (see above).
-2. The new device appears alongside your old MQTT-discovered entities.
-3. Remove the old entities by hand (Settings → Devices & Services → MQTT → click each Bindicator entity → ⋮ → Remove). The MQTT integration itself stays in place if you use it for other devices.
 
 ## Known limitations
 
