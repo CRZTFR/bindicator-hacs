@@ -1,0 +1,66 @@
+{
+  "config": {
+    "flow_title": "{name} ({host})",
+    "step": {
+      "user": {
+        "title": "Add Bindicator",
+        "description": "Enter the IP address or hostname of your Bindicator. You only need to do this if auto-discovery didn't find it.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "Add Bindicator",
+        "description": "Do you want to add the Bindicator at {host} ({name}) to Home Assistant?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Couldn't reach the device. Check the IP address and that the device is powered on and on the same network.",
+      "invalid_response": "The device responded but didn't look like a Bindicator. Wrong IP?",
+      "unknown": "Unexpected error. See the logs for details."
+    },
+    "abort": {
+      "already_configured": "This Bindicator is already set up.",
+      "no_devices_found": "No Bindicators found on the network."
+    }
+  },
+  "entity": {
+    "event": {
+      "touchpad": {
+        "name": "Touchpad",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "press": "Press",
+              "hold": "Hold"
+            }
+          }
+        }
+      }
+    },
+    "light": {
+      "top": {
+        "name": "Top"
+      },
+      "bottom": {
+        "name": "Bottom"
+      }
+    },
+    "sensor": {
+      "current_bin": {
+        "name": "Current bin"
+      },
+      "rssi": {
+        "name": "Wi-Fi signal"
+      },
+      "firmware": {
+        "name": "Firmware"
+      }
+    },
+    "calendar": {
+      "schedule": {
+        "name": "Bin schedule"
+      }
+    }
+  }
+}

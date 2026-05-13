@@ -1,0 +1,26 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Once a week to catch HA-side breaking changes (hassfest updates).
+    - cron: "0 12 * * 1"
+
+jobs:
+  hacs:
+    name: HACS validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  hassfest:
+    name: Home Assistant hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master

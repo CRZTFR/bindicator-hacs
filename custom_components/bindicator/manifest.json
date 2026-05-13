@@ -1,0 +1,18 @@
+{
+  "domain": "bindicator",
+  "name": "Bindicator",
+  "version": "0.1.0",
+  "documentation": "https://github.com/clearvuepv/bindicator-hacs",
+  "issue_tracker": "https://github.com/clearvuepv/bindicator-hacs/issues",
+  "codeowners": ["@clearvuepv"],
+  "iot_class": "local_push",
+  "integration_type": "device",
+  "config_flow": true,
+  "dependencies": [],
+  "requirements": [],
+  "zeroconf": [
+    {
+      "type": "_bindicator._tcp.local."
+    }
+  ]
+}
