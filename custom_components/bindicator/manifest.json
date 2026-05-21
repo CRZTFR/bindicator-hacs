@@ -1,7 +1,7 @@
 {
   "domain": "bindicator",
   "name": "Bindicator",
-  "codeowners": ["@Bindicator"],
+  "codeowners": ["@CRZTFR"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/CRZTFR/bindicator-hacs",
