@@ -1,6 +1,6 @@
 # Bindicator — Home Assistant integration
 
-Local-push integration for the [Bindicator](https://bindicator.net) bin-collection reminder lamp. Auto-discovers the device on your LAN, exposes the two RGB lights, the touchpad as an event entity, and the bin schedule as a calendar — all over a direct HTTP/SSE connection to the device. No cloud, no MQTT broker.
+Local-push integration for the [Bindicator](https://bindicator.net) bin-collection reminder lamp. Auto-discovers the device on your LAN, exposes the two RGB lights, the touchpad as an event entity, and the bin schedule as a calendar. Fully local communication.
 
 ## Install
 
@@ -23,15 +23,15 @@ If auto-discovery doesn't find your device (some routers block mDNS across VLANs
 ## Requirements
 
 - Home Assistant 2025.1.0 or newer
-- Bindicator firmware v23 or newer
+- Bindicator firmware v13/v23 or newer
 - HA and the Bindicator on the same LAN, with multicast reachability
 
 ## What you get
 
 | Entity | Type | Notes |
 |---|---|---|
-| `light.<id>_top` | Light | RGB, brightness. Authoritative live state of the upper puck. |
-| `light.<id>_bottom` | Light | RGB, brightness. Authoritative live state of the lower puck. |
+| `light.<id>_top` | Light | RGB, brightness. Authoritative live state of the upper light segment. |
+| `light.<id>_bottom` | Light | RGB, brightness. Authoritative live state of the lower light segment. |
 | `event.<id>_touchpad` | Event | `press` / `hold` event types from the physical touchpad. |
 | `calendar.<id>` | Calendar | Every scheduled bin event over a time window. Multiple concurrent schedules surface as overlapping events; state is "on" while any bin is currently out. |
 | `sensor.<id>_rssi` | Sensor | Wi-Fi signal strength (dBm), diagnostic. |
