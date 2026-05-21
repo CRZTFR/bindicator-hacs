@@ -56,6 +56,21 @@ class BindicatorClient:
         as the initial sync after a fresh config entry setup."""
         return await self._get("/api/state")
 
+    async def get_schedule(
+        self, from_epoch: int, to_epoch: int
+    ) -> list[dict[str, Any]]:
+        """`GET /api/schedule?from=...&to=...` — list of every enabled
+        occurrence overlapping the window. start/end are true UTC epochs.
+
+        Used by the calendar entity's async_get_events to answer Lovelace's
+        "show me the schedule between X and Y" queries — supports any
+        number of concurrent / overlapping schedules in a single response,
+        unlike the SSE current/next path."""
+        result = await self._get_raw(
+            f"/api/schedule?from={int(from_epoch)}&to={int(to_epoch)}"
+        )
+        return result if isinstance(result, list) else []
+
     async def set_light(
         self,
         which: str,
@@ -84,6 +99,12 @@ class BindicatorClient:
         await self._post("/api/preview", None)
 
     async def _get(self, path: str) -> dict[str, Any]:
+        result = await self._get_raw(path)
+        return result if isinstance(result, dict) else {}
+
+    async def _get_raw(self, path: str) -> Any:
+        """As _get, but returns the parsed JSON unchanged — list, dict,
+        or scalar. The /api/schedule endpoint returns a list at the root."""
         url = f"{self.base_url}{path}"
         try:
             async with self._session.get(url, timeout=REQUEST_TIMEOUT) as resp:

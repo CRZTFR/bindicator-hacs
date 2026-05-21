@@ -30,16 +30,61 @@ If auto-discovery doesn't find your device (some routers block mDNS across VLANs
 
 | Entity | Type | Notes |
 |---|---|---|
-| `light.<id>_top` | Light | RGB, brightness |
-| `light.<id>_bottom` | Light | RGB, brightness |
-| `event.<id>_touchpad` | Event | `press` / `hold` event types |
-| `calendar.<id>` | Calendar | Upcoming bin event |
-| `sensor.<id>_current_bin` | Sensor | Active schedule colour or "none" |
-| `sensor.<id>_rssi` | Sensor | Wi-Fi signal strength (dBm), diagnostic |
-| `sensor.<id>_firmware` | Sensor | Firmware version, diagnostic |
-| `update.<id>` | Update | Firmware-update entity |
+| `light.<id>_top` | Light | RGB, brightness. Authoritative live state of the upper puck. |
+| `light.<id>_bottom` | Light | RGB, brightness. Authoritative live state of the lower puck. |
+| `event.<id>_touchpad` | Event | `press` / `hold` event types from the physical touchpad. |
+| `calendar.<id>` | Calendar | Every scheduled bin event over a time window. Multiple concurrent schedules surface as overlapping events; state is "on" while any bin is currently out. |
+| `sensor.<id>_rssi` | Sensor | Wi-Fi signal strength (dBm), diagnostic. |
+| `sensor.<id>_firmware` | Sensor | Firmware version, diagnostic. |
 
-All entities are driven by a single Server-Sent Events stream from the device, so updates are pushed in real time (touchpad press → HA event within ~50ms).
+Live updates arrive via a Server-Sent Events stream from the device (touchpad press → HA event within ~50ms). The calendar entity additionally pulls a per-window event list from `/api/schedule` whenever Lovelace renders the calendar card — so concurrent and far-future schedules are never lossy.
+
+The calendar event `summary` is the schedule's name as set in the Bindicator app ("General waste", "Recycling", etc.) — see the **TrashCard** section below for using this with the popular bin-tracking Lovelace card.
+
+## TrashCard (recommended dashboard card)
+
+The [TrashCard](https://github.com/idaho/hassio-trash-card) custom card pairs perfectly with the Bindicator's calendar — it reads any calendar entity and renders a tidy "next collection" view on your dashboard. The Bindicator integration deliberately writes the schedule's app-defined name as each event's summary so TrashCard's pattern matching is as simple as typing your bin names.
+
+### Install TrashCard
+
+1. HACS → Frontend → ⋮ → **Custom repositories** (or search the default HACS list for "TrashCard").
+2. Install **TrashCard**, refresh the browser.
+3. Add a new card to your dashboard → **Custom: TrashCard**.
+
+### Wire it to the Bindicator
+
+In the card editor, set the entity to `calendar.<your_bindicator>` and define one pattern per bin name. Example YAML for a household with three weekly bins named "General waste", "Recycling", and "Garden waste" in the Bindicator app:
+
+```yaml
+type: custom:trash-card
+entities:
+  - calendar.bindicator      # use whatever your device's calendar entity is
+next_days: 14
+day_style: counter
+card_style: card
+color_mode: background
+with_label: true
+pattern:
+  - label: General waste
+    pattern: General waste   # substring-matched against the calendar event summary
+    type: waste
+    icon: mdi:trash-can
+    color: dark-grey
+  - label: Recycling
+    pattern: Recycling
+    type: recycle
+    icon: mdi:recycle-variant
+    color: amber
+  - label: Garden waste
+    pattern: Garden waste
+    type: organic
+    icon: mdi:leaf
+    color: light-green
+```
+
+The `pattern` field is matched as a case-insensitive substring against the event summary, so the names in your card config just need to be contained in the names you used in the Bindicator app. If your firmware is older than v23 (or the app didn't send a name for a schedule), the calendar falls back to the colour hex as the summary — you can match on `#ff0000` etc. as a temporary workaround until you re-save the schedule in the app.
+
+For the full set of TrashCard options (chip layout, all-day filtering, custom pictures, etc.) see the [TrashCard README](https://github.com/idaho/hassio-trash-card).
 
 ## Manual override
 

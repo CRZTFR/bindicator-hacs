@@ -6,12 +6,14 @@ from homeassistant.const import Platform
 DOMAIN = "bindicator"
 
 # Platforms registered by __init__.py via async_forward_entry_setups.
+# We deliberately omit Platform.UPDATE — the device only OTAs via AWS IoT,
+# never via HA, so an update entity has no actionable state and just
+# duplicates sensor.firmware.
 PLATFORMS: list[Platform] = [
     Platform.LIGHT,
     Platform.EVENT,
     Platform.CALENDAR,
     Platform.SENSOR,
-    Platform.UPDATE,
 ]
 
 # Dispatcher signal names. The event stream pushes payloads via

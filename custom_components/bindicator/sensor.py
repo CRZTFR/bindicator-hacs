@@ -1,4 +1,10 @@
-"""Sensor entities — current bin colour, Wi-Fi signal strength, firmware version."""
+"""Diagnostic sensors — Wi-Fi signal strength + firmware version.
+
+We deliberately don't expose a "current bin colour" sensor: the two light
+entities are the authoritative live state, and a single-value sensor can't
+faithfully represent a device that may have multiple concurrent schedules
+out at once.
+"""
 from __future__ import annotations
 
 from typing import Any
@@ -10,7 +16,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import BindicatorConfigEntry
-from .const import SIGNAL_RSSI, SIGNAL_SCHEDULE, SIGNAL_STATE
+from .const import SIGNAL_RSSI, SIGNAL_STATE
 from .entity import BindicatorEntity
 
 
@@ -22,58 +28,10 @@ async def async_setup_entry(
     runtime = entry.runtime_data
     async_add_entities(
         [
-            BindicatorCurrentBinSensor(runtime),
             BindicatorRssiSensor(runtime),
             BindicatorFirmwareSensor(runtime),
         ]
     )
-
-
-class BindicatorCurrentBinSensor(BindicatorEntity, SensorEntity):
-    """Current bin colour, or 'none' when no schedule is active."""
-
-    _attr_translation_key = "current_bin"
-
-    def __init__(self, runtime) -> None:
-        super().__init__(runtime)
-        self._attr_unique_id = f"{self._device_id}_current_bin"
-        snapshot = runtime.stream.snapshot or {}
-        self._apply(snapshot.get("current_bin"))
-
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            async_dispatcher_connect(
-                self.hass,
-                SIGNAL_SCHEDULE.format(id=self._device_id),
-                self._handle_schedule,
-            )
-        )
-        self.async_on_remove(
-            async_dispatcher_connect(
-                self.hass,
-                SIGNAL_STATE.format(id=self._device_id),
-                self._handle_state,
-            )
-        )
-
-    @callback
-    def _handle_schedule(self, payload: dict[str, Any]) -> None:
-        if not isinstance(payload, dict):
-            return
-        self._apply(payload.get("current"))
-        self.async_write_ha_state()
-
-    @callback
-    def _handle_state(self, payload: dict[str, Any]) -> None:
-        self._apply((payload or {}).get("current_bin"))
-        self.async_write_ha_state()
-
-    def _apply(self, entry: dict[str, Any] | None) -> None:
-        if not entry:
-            self._attr_native_value = "none"
-        else:
-            self._attr_native_value = entry.get("color") or "none"
 
 
 class BindicatorRssiSensor(BindicatorEntity, SensorEntity):
@@ -86,7 +44,7 @@ class BindicatorRssiSensor(BindicatorEntity, SensorEntity):
     def __init__(self, runtime) -> None:
         super().__init__(runtime)
         self._attr_unique_id = f"{self._device_id}_rssi"
-        snapshot = runtime.stream.snapshot or {}
+        snapshot = runtime.stream.snapshot or runtime.coordinator.data or {}
         rssi = snapshot.get("rssi")
         if isinstance(rssi, (int, float)):
             self._attr_native_value = int(rssi)
@@ -125,9 +83,9 @@ class BindicatorRssiSensor(BindicatorEntity, SensorEntity):
 
 
 class BindicatorFirmwareSensor(BindicatorEntity, SensorEntity):
-    """Firmware version as a separate diagnostic sensor. Mirrors the
-    `update` entity's installed-version field, but easier to template
-    against in automations ('if firmware == 22')."""
+    """Firmware version as a diagnostic sensor. The device card also picks
+    this up via DeviceInfo.sw_version; the sensor form makes it easy to
+    template against in automations (e.g. "if firmware == 22")."""
 
     _attr_translation_key = "firmware"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -135,15 +93,16 @@ class BindicatorFirmwareSensor(BindicatorEntity, SensorEntity):
     def __init__(self, runtime) -> None:
         super().__init__(runtime)
         self._attr_unique_id = f"{self._device_id}_firmware"
-        info = runtime.stream.snapshot or {}
+        info = runtime.stream.snapshot or runtime.coordinator.data or {}
         version = info.get("sw_version") or info.get("version")
         if version is not None:
             self._attr_native_value = str(version)
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
-        # Firmware is pushed in the snapshot, which comes through both the
-        # SSE snapshot event and the poll coordinator.
+        # Firmware is pushed in the snapshot, which arrives via both the SSE
+        # snapshot event and the safety-net coordinator poll (both fire
+        # SIGNAL_STATE with the same payload shape).
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,

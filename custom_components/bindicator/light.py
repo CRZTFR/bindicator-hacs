@@ -47,8 +47,11 @@ class BindicatorLight(BindicatorEntity, LightEntity):
         self._attr_translation_key = translation_key
         self._attr_unique_id = f"{self._device_id}_{which}"
         # Seed from the latest snapshot so HA doesn't render "unknown" on
-        # restart while we wait for the first push.
-        self._apply_state(runtime.stream.snapshot.get("lights", {}).get(which, {}))
+        # restart while we wait for the first push. Stream snapshot is empty
+        # at __init__ (SSE hasn't started yet), so fall back to the
+        # coordinator's REST poll which has already populated by this point.
+        snapshot = runtime.stream.snapshot or runtime.coordinator.data or {}
+        self._apply_state((snapshot.get("lights") or {}).get(which, {}))
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()

@@ -23,9 +23,15 @@ class BindicatorEntity(Entity):
     def __init__(self, runtime: BindicatorRuntimeData) -> None:
         self._runtime = runtime
         self._device_id = runtime.device_id
-        # Initial availability reflects the stream's current state. The
-        # dispatcher will overwrite it on the next transition.
-        self._attr_available = runtime.stream.connected
+        # Initial availability: stream hasn't started yet at __init__ time
+        # (it kicks off after platforms forward), so stream.connected is
+        # False. Fall back to the coordinator's last poll success — if REST
+        # worked, the device is reachable even if SSE hasn't connected yet.
+        # The SIGNAL_AVAILABILITY dispatcher takes over on the next
+        # transition.
+        self._attr_available = (
+            runtime.stream.connected or runtime.coordinator.last_update_success
+        )
         snapshot = runtime.stream.snapshot or runtime.coordinator.data or {}
         sw_version = None
         # The poll snapshot from /api/state doesn't include firmware, but

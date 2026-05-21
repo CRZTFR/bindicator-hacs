@@ -47,9 +47,6 @@
       }
     },
     "sensor": {
-      "current_bin": {
-        "name": "Current bin"
-      },
       "rssi": {
         "name": "Wi-Fi signal"
       },

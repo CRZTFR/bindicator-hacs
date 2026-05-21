@@ -44,7 +44,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BindicatorConfigEntry) -
 
     session = async_get_clientsession(hass)
     client = BindicatorClient(session, host, port)
-    coordinator = BindicatorCoordinator(hass, client)
+    coordinator = BindicatorCoordinator(hass, client, device_id)
     stream = BindicatorEventStream(hass, session, client, device_id)
 
     # Initial state pull — fails fast if the device is unreachable during
