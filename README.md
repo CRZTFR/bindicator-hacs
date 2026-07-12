@@ -7,7 +7,7 @@ Local-push integration for the [Bindicator](https://bindicator.net) bin-collecti
 ### HACS (recommended)
 
 1. In HACS → Integrations → ⋮ → **Custom repositories**
-2. Add `https://github.com/CRZTFR/bindicator-hacs` as type **Integration**
+2. Add `https://github.com/CRZTFR/bindicator` as type **Integration**
 3. Install the **Bindicator** integration
 4. Restart Home Assistant
 5. Your Bindicator should appear under **Settings → Devices & Services → Discovered**. Click **Add** — there's nothing to configure.
@@ -23,7 +23,7 @@ If auto-discovery doesn't find your device (some routers block mDNS across VLANs
 ## Requirements
 
 - Home Assistant 2025.1.0 or newer
-- Bindicator firmware v13/v23 or newer
+- Bindicator firmware v13 or newer (V1 hardware) / v24 or newer (V2 hardware). Check for updates in the Bindicator app's settings.
 - HA and the Bindicator on the same LAN, with multicast reachability
 
 ## What you get
@@ -82,7 +82,7 @@ pattern:
     color: light-green
 ```
 
-The `pattern` field is matched as a case-insensitive substring against the event summary, so the names in your card config just need to be contained in the names you used in the Bindicator app. If your firmware is older than v23 (or the app didn't send a name for a schedule), the calendar falls back to the colour hex as the summary — you can match on `#ff0000` etc. as a temporary workaround until you re-save the schedule in the app.
+The `pattern` field is matched as a case-insensitive substring against the event summary, so the names in your card config just need to be contained in the names you used in the Bindicator app. If a schedule on the device has no name (typically one saved with an older app or firmware), the calendar falls back to the colour hex as the summary. You can match on `#ff0000` etc. as a temporary workaround until you re-save the schedule in the app.
 
 For the full set of TrashCard options (chip layout, all-day filtering, custom pictures, etc.) see the [TrashCard README](https://github.com/idaho/hassio-trash-card).
 
